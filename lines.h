@@ -13,7 +13,7 @@ void free_lines(Line *lines);
 
 void print_lines(Line *lines);
 
-int count_lines(Line *lines, int count);
+int count_lines(Line *lines);
 
 char *line_at(Line *lines, int index);
 

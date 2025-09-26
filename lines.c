@@ -18,8 +18,10 @@ Line *file_to_lines(const char *file_path) {
   while (1) {
     int string_size = 128;
     char *line = malloc(string_size);
-    if (!line)
+    if (!line) {
+      free_lines(lines);
       return NULL;
+    }
     int line_length = 0;
     while ((c = fgetc(fp)) != EOF && c != '\n') {
       if (line_length == string_size - 1) {
@@ -72,16 +74,19 @@ void print_lines(Line *lines) {
   print_lines(lines->next);
 }
 
-int count_lines(Line *lines, int count) {
-  if (!lines)
-    return count;
-  return count_lines(lines->next, count + 1);
+int count_lines(Line *lines) {
+  int count = 0;
+  while (lines) {
+    count++;
+    lines = lines->next;
+  }
+  return count;
 }
 
 char *line_at(Line *lines, int index) {
-  if (!lines)
-    return NULL;
-  if (index <= 0)
-    return lines->line;
-  return line_at(lines->next, index - 1);
+  while (lines && index > 0) {
+    lines = lines->next;
+    index--;
+  }
+  return lines ? lines->line : NULL;
 }
