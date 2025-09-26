@@ -31,7 +31,7 @@ Line *file_to_lines(const char *file_path) {
           return NULL;
         }
         line = new_line;
-      };
+      }
       line[line_length++] = (char)c;
     }
 
@@ -75,11 +75,13 @@ void print_lines(Line *lines) {
 int count_lines(Line *lines, int count) {
   if (!lines)
     return count;
-  return count_lines(lines->next, count++);
-};
+  return count_lines(lines->next, count + 1);
+}
 
 char *line_at(Line *lines, int index) {
+  if (!lines)
+    return NULL;
   if (index <= 0)
     return lines->line;
-  return line_at(lines, index--);
+  return line_at(lines->next, index - 1);
 }
