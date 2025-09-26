@@ -16,7 +16,7 @@ int shortest_edit(char *file1, char *file2) {
   v[1] = 0;
 
   for (int d = 0; d <= max_edits; d++) {
-    for (int k = -d; k <= d; k++) {
+    for (int k = -d; k <= d; k += 2) {
       int x, y;
       if (k == -d || (k != d && v[k - 1 + max_edits] < v[k + 1 + max_edits])) {
         x = v[k + 1 + max_edits];
