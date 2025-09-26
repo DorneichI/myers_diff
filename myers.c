@@ -6,11 +6,16 @@
 int shortest_edit(char *file1, char *file2) {
   Line *lines_a = file_to_lines(file1);
   Line *lines_b = file_to_lines(file2);
-  int n = count_lines(lines_a, 0);
-  int m = count_lines(lines_b, 0);
+  int n = count_lines(lines_a);
+  int m = count_lines(lines_b);
   int max_edits = n + m;
 
   int *v = malloc((2 * max_edits + 1) * sizeof(int));
+  if (!v) {
+    free_lines(lines_a);
+    free_lines(lines_b);
+    return -1;
+  }
 
   v[max_edits] = 0;
 
@@ -31,11 +36,15 @@ int shortest_edit(char *file1, char *file2) {
       v[k + max_edits] = x;
 
       if (x >= n && y >= m) {
+        free_lines(lines_a);
+        free_lines(lines_b);
         free(v);
         return d;
       }
     }
   }
+  free_lines(lines_a);
+  free_lines(lines_b);
   free(v);
   return -1;
 }
