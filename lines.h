@@ -1,20 +1,15 @@
 #ifndef LINES
 #define LINES
 
-typedef struct Line {
-  int line_number;
-  char *line;
-  struct Line *next;
-} Line;
+typedef struct {
+  char **data;
+  int size;
+} Lines;
 
-Line *file_to_lines(const char *file_path);
+Lines *file_to_lines(const char *file_path);
 
-void free_lines(Line *lines);
+void free_lines(Lines *lines);
 
-void print_lines(Line *lines);
-
-int count_lines(Line *lines);
-
-char *line_at(Line *lines, int index);
+void print_lines(Lines *lines);
 
 #endif
