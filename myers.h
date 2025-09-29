@@ -1,6 +1,8 @@
 #ifndef MYERS
 #define MYERS
 
+#include "lines.h"
+
 typedef struct {
   int **data;
   int size;
@@ -8,7 +10,7 @@ typedef struct {
 
 void free_trace(traces *trace);
 
-traces *shortest_edit(Line *lines_a, Line *lines_b, int size_a, int size_b);
+traces *shortest_edit(Lines *lines_a, Lines *lines_b);
 
 typedef struct {
   int *data;
@@ -32,7 +34,7 @@ typedef struct {
   int size;
 } diffs;
 
-diffs *create_diffs(tracks *track, Line *lines_a, Line *lines_b);
+diffs *create_diffs(tracks *track, Lines *lines_a, Lines *lines_b);
 
 void print_diff(diffs *data);
 
