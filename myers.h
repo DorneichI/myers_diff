@@ -2,22 +2,38 @@
 #define MYERS
 
 typedef struct {
-  int **trace;
+  int **data;
   int size;
-} TraceResult;
+} traces;
 
-void free_trace(TraceResult *result);
+void free_trace(traces *trace);
 
-TraceResult *shortest_edit(Line *lines_a, Line *lines_b, int size_a,
-                           int size_b);
+traces *shortest_edit(Line *lines_a, Line *lines_b, int size_a, int size_b);
 
 typedef struct {
-  int *track;
+  int *data;
   int size;
-} TrackResult;
+} tracks;
 
-void free_track(TrackResult *result);
+void free_track(tracks *track);
 
-TrackResult *backtrack(int size_a, int size_b, TraceResult *trace);
+tracks *backtrack(int size_a, int size_b, traces *trace);
+
+enum action { INSERT, DELETE, EQUAL, ACTION_COUNT };
+
+typedef struct {
+  enum action action;
+  char *line_a;
+  char *line_b;
+} diff;
+
+typedef struct {
+  diff *data;
+  int size;
+} diffs;
+
+diffs *create_diffs(tracks *track, Line *lines_a, Line *lines_b);
+
+void print_diff(diffs *data);
 
 #endif

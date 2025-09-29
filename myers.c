@@ -5,16 +5,16 @@
 #include "lines.h"
 #include "myers.h"
 
-void free_trace(TraceResult *result) {
-  if (!result)
+void free_trace(traces *trace) {
+  if (!trace)
     return;
-  if (result->trace) {
-    for (int i = 0; i <= result->size; i++) {
-      free(result->trace[i]);
+  if (trace->data) {
+    for (int i = 0; i <= trace->size; i++) {
+      free(trace->data[i]);
     }
-    free(result->trace);
+    free(trace->data);
   }
-  free(result);
+  free(trace);
 }
 
 void cleanup_diff(int *v, int **trace, int trace_size) {
@@ -29,8 +29,7 @@ void cleanup_diff(int *v, int **trace, int trace_size) {
   }
 }
 
-TraceResult *shortest_edit(Line *lines_a, Line *lines_b, int size_a,
-                           int size_b) {
+traces *shortest_edit(Line *lines_a, Line *lines_b, int size_a, int size_b) {
   int n = size_a;
   int m = size_b;
   int max_edits = n + m;
@@ -69,9 +68,9 @@ TraceResult *shortest_edit(Line *lines_a, Line *lines_b, int size_a,
         memcpy(v_cpy, v, (2 * max_edits + 1) * sizeof(int));
         trace[d] = v_cpy;
         cleanup_diff(v, NULL, 0);
-        TraceResult *result = malloc(sizeof(TraceResult));
+        traces *result = malloc(sizeof(traces));
         result->size = d;
-        result->trace = trace;
+        result->data = trace;
         return result;
       }
     }
@@ -87,14 +86,14 @@ TraceResult *shortest_edit(Line *lines_a, Line *lines_b, int size_a,
   return NULL;
 }
 
-void free_track(TrackResult *result) {
-  if (!result)
+void free_track(tracks *track) {
+  if (!track)
     return;
-  free(result->track);
-  free(result);
+  free(track->data);
+  free(track);
 }
 
-TrackResult *backtrack(int size_a, int size_b, TraceResult *trace) {
+tracks *backtrack(int size_a, int size_b, traces *trace) {
   int lengthof_route = 1;
   int *route = malloc((size_a + size_b + 1) * 2 * sizeof(int));
   int x = size_a;
@@ -104,12 +103,12 @@ TrackResult *backtrack(int size_a, int size_b, TraceResult *trace) {
   for (int i = trace->size; i >= 0; i--) {
     int k = x - y;
     int prev_k;
-    if (k == -i || (k != i && trace->trace[i][k - 1 + offset] <
-                                  trace->trace[i][k + 1 + offset]))
+    if (k == -i || (k != i && trace->data[i][k - 1 + offset] <
+                                  trace->data[i][k + 1 + offset]))
       prev_k = k + 1;
     else
       prev_k = k - 1;
-    int prev_x = trace->trace[i][prev_k + offset];
+    int prev_x = trace->data[i][prev_k + offset];
     int prev_y = prev_x - prev_k;
 
     while (x > prev_x && y > prev_y) {
@@ -130,8 +129,53 @@ TrackResult *backtrack(int size_a, int size_b, TraceResult *trace) {
     y = prev_y;
   }
 
-  TrackResult *result = malloc(sizeof(TrackResult));
+  tracks *result = malloc(sizeof(tracks));
   result->size = lengthof_route;
-  result->track = route;
+  result->data = route;
   return result;
+}
+
+diffs *create_diffs(tracks *track, Line *lines_a, Line *lines_b) {
+  diff *data = malloc((track->size - 1) * sizeof(diff));
+
+  for (int i = 0; i < track->size * 2 - 3; i += 2) {
+    char *line_a = line_at(lines_a, track->data[i + 2]);
+    char *line_b = line_at(lines_b, track->data[i + 3]);
+    if (track->data[i] == track->data[i + 2]) {
+      data[track->size - i / 2 - 2].action = INSERT;
+      data[track->size - i / 2 - 2].line_a = NULL;
+      data[track->size - i / 2 - 2].line_b = line_b;
+    } else if (track->data[i + 1] == track->data[i + 3]) {
+      data[track->size - i / 2 - 2].action = DELETE;
+      data[track->size - i / 2 - 2].line_a = line_a;
+      data[track->size - i / 2 - 2].line_b = NULL;
+    } else {
+      data[track->size - i / 2 - 2].action = EQUAL;
+      data[track->size - i / 2 - 2].line_a = line_a;
+      data[track->size - i / 2 - 2].line_b = line_b;
+    }
+  }
+  diffs *result = malloc(sizeof(diffs));
+  result->data = data;
+  result->size = track->size - 1;
+  return result;
+}
+
+const char *COLORS[ACTION_COUNT] = {
+    [INSERT] = "\e[32m",
+    [DELETE] = "\e[31m",
+    [EQUAL] = "\e[39m",
+};
+
+void print_diff(diffs *data) {
+  for (int i = 0; i < data->size; i++) {
+    if (data->data[i].action == INSERT) {
+      printf("%s+ %s\n", COLORS[INSERT], data->data[i].line_b);
+    } else if (data->data[i].action == DELETE) {
+      printf("%s- %s\n", COLORS[DELETE], data->data[i].line_a);
+    } else {
+      printf("%s  %s\n", COLORS[EQUAL], data->data[i].line_a);
+    }
+    printf("%s", COLORS[EQUAL]);
+  }
 }
