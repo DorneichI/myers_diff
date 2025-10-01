@@ -34,6 +34,8 @@ typedef struct {
   int size;
 } diffs;
 
+void free_diffs(diffs *diff);
+
 diffs *create_diffs(tracks *track, Lines *lines_a, Lines *lines_b);
 
 void print_diff(diffs *data);

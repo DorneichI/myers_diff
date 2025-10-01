@@ -12,16 +12,14 @@ int main(int argc, char *argv[]) {
   char *file1 = argv[1];
   char *file2 = argv[2];
 
-  Line *lines_a = file_to_lines(file1);
-  Line *lines_b = file_to_lines(file2);
-  int size_a = count_lines(lines_a);
-  int size_b = count_lines(lines_b);
+  Lines *lines_a = file_to_lines(file1);
+  Lines *lines_b = file_to_lines(file2);
 
-  traces *trace = shortest_edit(lines_a, lines_b, size_a, size_b);
+  traces *trace = shortest_edit(lines_a, lines_b);
 
   printf("shortest edit is: %i\n", trace->size);
 
-  tracks *track = backtrack(size_a, size_b, trace);
+  tracks *track = backtrack(lines_a->size, lines_b->size, trace);
 
   diffs *line_diff_result = create_diffs(track, lines_a, lines_b);
 
@@ -31,4 +29,5 @@ int main(int argc, char *argv[]) {
   free_lines(lines_b);
   free_trace(trace);
   free_track(track);
+  free_diffs(line_diff_result);
 }

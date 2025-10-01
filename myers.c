@@ -29,9 +29,9 @@ void cleanup_diff(int *v, int **trace, int trace_size) {
   }
 }
 
-traces *shortest_edit(Line *lines_a, Line *lines_b, int size_a, int size_b) {
-  int n = size_a;
-  int m = size_b;
+traces *shortest_edit(Lines *lines_a, Lines *lines_b) {
+  int n = lines_a->size;
+  int m = lines_b->size;
   int max_edits = n + m;
 
   int *v = malloc((2 * max_edits + 1) * sizeof(int));
@@ -52,8 +52,7 @@ traces *shortest_edit(Line *lines_a, Line *lines_b, int size_a, int size_b) {
       };
       y = x - k;
 
-      while (x < n && y < m &&
-             !strcmp(line_at(lines_a, x), line_at(lines_b, y))) {
+      while (x < n && y < m && !strcmp(lines_a->data[x], lines_b->data[y])) {
         x++;
         y++;
       };
@@ -135,12 +134,19 @@ tracks *backtrack(int size_a, int size_b, traces *trace) {
   return result;
 }
 
-diffs *create_diffs(tracks *track, Line *lines_a, Line *lines_b) {
+void free_diffs(diffs *diff) {
+  if (!diff)
+    return;
+  free(diff->data);
+  free(diff);
+}
+
+diffs *create_diffs(tracks *track, Lines *lines_a, Lines *lines_b) {
   diff *data = malloc((track->size - 1) * sizeof(diff));
 
   for (int i = 0; i < track->size * 2 - 3; i += 2) {
-    char *line_a = line_at(lines_a, track->data[i + 2]);
-    char *line_b = line_at(lines_b, track->data[i + 3]);
+    char *line_a = lines_a->data[track->data[i + 2]];
+    char *line_b = lines_b->data[track->data[i + 3]];
     if (track->data[i] == track->data[i + 2]) {
       data[track->size - i / 2 - 2].action = INSERT;
       data[track->size - i / 2 - 2].line_a = NULL;

@@ -7,10 +7,10 @@ void free_line_data(char **data, int size) {
   for (int i = 0; i < size; i++) {
     free(data[i]);
   }
+  free(data);
 }
 
 Lines *file_to_lines(const char *file_path) {
-
   FILE *fp = fopen(file_path, "r");
   if (!fp)
     return NULL;
@@ -26,7 +26,7 @@ Lines *file_to_lines(const char *file_path) {
       size *= 2;
       char **new_data = realloc(data, size * sizeof(char *));
       if (!new_data) {
-        free_line_data(data, line_number);
+        free_line_data(data, size);
         free(data);
         return NULL;
       }
@@ -36,7 +36,7 @@ Lines *file_to_lines(const char *file_path) {
     int string_size = 16;
     char *line = malloc(string_size);
     if (!line) {
-      free_line_data(data, line_number);
+      free_line_data(data, size);
       free(data);
       return NULL;
     }
@@ -47,7 +47,7 @@ Lines *file_to_lines(const char *file_path) {
         char *new_line = realloc(line, string_size);
         if (!new_line) {
           free(line);
-          free_line_data(data, line_number);
+          free_line_data(data, size);
           free(data);
           return NULL;
         }
@@ -63,9 +63,9 @@ Lines *file_to_lines(const char *file_path) {
       break;
     }
   }
-
   char **new_data = realloc(data, line_number * sizeof(char *));
   if (!new_data) {
+    free_line_data(data, size);
     free(data);
     return NULL;
   }
